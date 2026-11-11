@@ -117,6 +117,22 @@ test('headline numbers in data/results.json reproduce exactly from the seeded pi
   assert.ok(after.actions.find((a) => a.id === 'A9').hi < 1, 'speeding up the lowest-OEE station adds nothing');
 });
 
+test('parameter-uncertainty interval is wider than the simulation-only CI and covers the hidden line', () => {
+  assert.ok(res.robust.p05 < res.plan.lo && res.robust.p95 > res.plan.hi);
+  assert.ok(res.robust.p05 <= res.truthCheck.uplift && res.truthCheck.uplift <= res.robust.p95);
+  assert.ok(Math.abs(Object.values(res.robust.bestShare).reduce((a, b) => a + b, 0) - 1) < 1e-3);
+});
+
+test('plausible twins are centred on the calibrated MTBF (randomized)', () => {
+  const r = L.rng(8);
+  const twin = { scrap: mes.scrapObserved, qualityAt: 4, buffers: [...mes.buffers], stations: res.calibrated };
+  const k = 2; const draws = [];
+  for (let b = 0; b < 400; b++) draws.push(1 / L.plausibleTwin(twin, mes.stations, r).stations[k].mtbf);
+  const rate = draws.reduce((a, x) => a + x, 0) / draws.length;
+  const expect = (mes.stations[k].failures.length + 0.5) / mes.stations[k].busyMin;
+  assert.ok(Math.abs(rate / expect - 1) < 0.05, `${rate} vs ${expect}`);
+});
+
 test('CSV export escapes commas and quotes', () => {
   assert.equal(L.toCSV([['a,b', 'say "hi"', 3]]), '"a,b","say ""hi""",3');
 });

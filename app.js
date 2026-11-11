@@ -169,7 +169,7 @@ function plan(r) {
   <div class="c"><div class="metrics" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px">
     <div class="metric"><label>Added good parts / week</label><div class="v green">+${P.uplift.toFixed(0)}</div><div class="s">95% CI ${P.lo.toFixed(0)} to ${P.hi.toFixed(0)} · ${P.ids.length} actions</div></div>
     <div class="metric"><label>Line output</label><div class="v">+${pct(P.pct, 1)}</div><div class="s">vs ${R.plan.baseMean.toFixed(0)} / week on the twin</div></div>
-    <div class="metric"><label>Spend</label><div class="v">${eur(P.spent)}</div><div class="s">greedy by uplift per euro, re-simulated each step</div></div></div>
+    <div class="metric"><label>Spend</label><div class="v">${eur(P.spent)}</div><div class="s">${live ? 'greedy by uplift per euro, re-simulated' : `robust to data: +${R.robust.p05.toFixed(0)} to +${R.robust.p95.toFixed(0)} (90%)`}</div></div></div>
   <table class="ot" aria-label="Plan steps"><thead><tr><th>Step</th><th>Action</th><th class="num">Cost</th><th class="num">Added on top of earlier steps</th><th class="num">Cumulative spend</th></tr></thead><tbody>${steps || '<tr><td colspan="5" style="color:var(--gray1)">No action fits this budget with a positive lower confidence bound.</td></tr>'}</tbody></table>
   ${st.workorders.length ? `<div class="mlabel" style="margin-top:16px">Work orders</div><table class="ot"><thead><tr><th>ID</th><th>Action</th><th>Owner</th><th>Status</th></tr></thead><tbody>${st.workorders.map((w) => `<tr><td>${w.id}</td><td>${esc(w.title)}</td><td>${esc(w.owner)}</td><td><span class="tag blue">${w.status}</span></td></tr>`).join('')}</tbody></table>` : ''}
   </div></div>`;
@@ -186,6 +186,12 @@ function twin() {
     <div class="metric"><label>Twin good parts / week</label><div class="v">${R.twinWeeklyMean.toFixed(0)}</div><div class="s">sd ${R.twinWeeklySd.toFixed(0)} over ${R.reps} simulated weeks (${pct(R.twinWeeklyMean / R.observedWeeklyMean - 1)})</div></div>
     <div class="metric"><label>Plan on the hidden “true” line</label><div class="v green">+${R.truthCheck.uplift.toFixed(0)}</div><div class="s">twin predicted +${R.plan.uplift.toFixed(0)} (CI ${R.plan.lo.toFixed(0)}–${R.plan.hi.toFixed(0)}): conservative</div></div>
   </div>
+  <div class="sec"><div class="h">${ic('random')}<span class="grow">Decision robustness under parameter uncertainty</span><small>${R.robust.B} plausible twins drawn from the calibration likelihood</small></div><div class="c">
+    <div class="metrics" style="grid-template-columns:repeat(3,minmax(0,1fr));margin:0">
+      <div class="metric"><label>Plan uplift, 90% interval</label><div class="v">+${R.robust.p05.toFixed(0)} to +${R.robust.p95.toFixed(0)}</div><div class="s">covers the true +${R.truthCheck.uplift.toFixed(0)}; simulation-only CI did not</div></div>
+      <div class="metric"><label>${R.kn.best} still the best single action</label><div class="v">${pct(R.robust.bestShare[R.kn.best], 0)}</div><div class="s">of plausible twins (${Object.entries(R.robust.bestShare).filter(([k, v]) => v > 0 && k !== R.kn.best).map(([k, v]) => `${k} ${pct(v, 0)}`).join(', ')})</div></div>
+      <div class="metric"><label>Weakest link in the data</label><div class="v">${R.constraint.id} MTBF</div><div class="s">${app.cal.find((c) => c.id === R.constraint.id).failures} breakdowns logged; more weeks narrow this most</div></div>
+    </div></div></div>
   <div class="sec"><div class="h">${ic('derive-column')}<span class="grow">Calibrated parameters</span><small>MTBF 95% interval from the χ² likelihood</small></div><div style="overflow:auto"><table class="ot"><thead><tr><th>Station</th><th class="num">Cycle (mean)</th><th class="num">Cycle CV</th><th class="num">Breakdowns</th><th class="num">MTBF, busy min</th><th class="num">MTTR</th></tr></thead><tbody>${rows}</tbody></table></div></div>
   <div class="foot">Truth check: the demo's log was generated from a hidden parameter set (scripts/generate.mjs). Applying the approved plan to that hidden line on fresh random weeks gives +${R.truthCheck.uplift.toFixed(1)} parts/week (95% CI ${R.truthCheck.lo.toFixed(1)}–${R.truthCheck.hi.toFixed(1)}), above the twin's estimate: 4 weeks of data understate how often ${R.constraint.id} fails.</div>`;
 }

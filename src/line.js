@@ -282,3 +282,51 @@ export function greedyPlan(line, actions, budget, { reps = 40, seed0 = 7000 } = 
 export function toCSV(rows) {
   return rows.map((r) => r.map((x) => (typeof x === 'string' && /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x)).join(',')).join('\n');
 }
+
+// ---------- input uncertainty (parameter uncertainty from a short log) ----------
+// Gamma(shape k) sampler (Marsaglia-Tsang)
+export function gammaSample(k, r) {
+  if (k < 1) return gammaSample(k + 1, r) * Math.pow(r(), 1 / k);
+  const d = k - 1 / 3, c = 1 / Math.sqrt(9 * d);
+  for (;;) {
+    let x, v;
+    do { x = r.normal(); v = 1 + c * x; } while (v <= 0);
+    v = v * v * v; const u = r();
+    if (u < 1 - 0.0331 * x ** 4 || Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
+  }
+}
+
+// One plausible twin: failure rate ~ Gamma(n_fail, busy) posterior (Jeffreys-ish, n>=1),
+// repair mean by bootstrap of observed repairs, cycle mean ~ Normal(mean, sd/sqrt(n)).
+export function plausibleTwin(twin, stations, r) {
+  const T = cloneLine(twin);
+  T.stations.forEach((s, i) => {
+    const d = stations[i]; const nf = d.failures.length;
+    const rate = gammaSample(Math.max(nf, 1) + 0.5, r) / d.busyMin;
+    s.mtbf = 1 / rate;
+    if (nf) { let sum = 0; for (let j = 0; j < nf; j++) sum += d.failures[r.int(nf)].dur; s.mttr = sum / nf; }
+    const se = (s.cv * s.cycle) / Math.sqrt(d.cycleN);
+    s.cycle = s.cycle + se * r.normal();
+  });
+  return T;
+}
+
+// Robustness of a decision under parameter uncertainty: for B plausible twins, the plan's
+// uplift (CRN, `reps` weeks each) and which single action ranks first.
+export function robustness(twin, stations, actions, planIds, { B = 40, reps = 8, seed = 99 } = {}) {
+  const r = rng(seed);
+  const uplifts = [], bestCount = Object.fromEntries(actions.map((a) => [a.id, 0]));
+  const planActs = actions.filter((a) => planIds.includes(a.id));
+  for (let b = 0; b < B; b++) {
+    const T = plausibleTwin(twin, stations, r);
+    const base = replicate(T, reps, { seed0: 40000 + b * 100 });
+    const withPlan = replicate(applyActions(T, planActs), reps, { seed0: 40000 + b * 100 });
+    uplifts.push(mean(withPlan) - mean(base));
+    let best = null, bestV = -Infinity;
+    for (const a of actions) { const v = mean(replicate(applyActions(T, [a]), reps, { seed0: 40000 + b * 100 })) - mean(base); if (v > bestV) { bestV = v; best = a.id; } }
+    bestCount[best]++;
+  }
+  const s = [...uplifts].sort((x, y) => x - y);
+  const q = (p) => s[Math.min(s.length - 1, Math.max(0, Math.round(p * (s.length - 1))))];
+  return { B, reps, uplift: { mean: mean(uplifts), p05: q(0.05), p95: q(0.95) }, bestShare: Object.fromEntries(Object.entries(bestCount).map(([k, v]) => [k, v / B])), uplifts };
+}

@@ -21,6 +21,7 @@ Onodrim buys specialist European manufacturers and sends Forward Deployed Operat
 - **Bottleneck detection**: the active period method (Roser, Nakano & Tanaka, 2001): a station is active while running or down; at each moment the one with the longest ongoing active period limits the line.
 - **Ranking and selection**: the Kim-Nelson (2001) fully sequential procedure. It guarantees P(select the best) ≥ 1-α when the best action is at least δ parts/week better than the rest (α = 5%, δ = 8). A randomized test checks the guarantee empirically.
 - **Plan**: greedy by uplift per €10k, re-simulated at every step on top of what is already chosen, keeping only steps whose 95% lower bound is positive.
+- **Decision robustness (input uncertainty)**: 4 weeks of log pin the parameters down only loosely. The app draws 60 plausible twins (failure rate from its Gamma posterior, repair mean by bootstrap, cycle mean from its sampling error), re-runs the plan and the single-action ranking on each, and reports the plan's 90% interval and how often the chosen action stays best. The simulation-only CI (80-92) missed the hidden line's true effect (+98); the input-uncertainty interval (77-106) covers it.
 
 ## Results (`node scripts/generate.mjs`, seeded, deterministic)
 
@@ -35,14 +36,16 @@ Onodrim buys specialist European manufacturers and sends Forward Deployed Operat
 | €120k robotic deburr cell (visibly slow station) | -0.3 parts/week (CI -0.7 to 0.1) |
 | **€100k plan** (A7, A4, A1, A6, A3) | **+85.7 parts/week, +14.0% (CI 79.8-91.6)** |
 | Same plan on the hidden true line (fresh weeks) | +98.5 parts/week, +16.9% (CI 92.9-104.0) |
+| Plan uplift with parameter uncertainty (60 plausible twins) | 90% interval +76.5 to +105.5 (covers the true +98.5) |
+| A7 still the best single action across plausible twins | 82% (A1 10%, A2 8%) |
 
 ## Tests
 
 ```
-node --test tests/*.test.mjs   # 13 tests, ~1.5 s
+node --test tests/*.test.mjs   # 15 tests, ~3 s
 ```
 
-Deterministic line throughput equals the slowest station's rate; state accounting sums to planned time; flow conservation and buffer limits hold (randomized buffers); MLE calibration recovers the true parameters from a long log; the active period method finds a planted bottleneck; CRN gives exactly zero uplift for a no-op; speeding the bottleneck beats speeding a non-bottleneck; KN achieves its probability of correct selection under the least-favourable configuration (randomized, 150 trials); normal/χ² quantiles; budget respected with positive lower bounds; the headline numbers reproduce exactly from the seeded pipeline; CSV escaping. CI: `.github/workflows/test.yml`.
+Deterministic line throughput equals the slowest station's rate; state accounting sums to planned time; flow conservation and buffer limits hold (randomized buffers); MLE calibration recovers the true parameters from a long log; the active period method finds a planted bottleneck; CRN gives exactly zero uplift for a no-op; speeding the bottleneck beats speeding a non-bottleneck; KN achieves its probability of correct selection under the least-favourable configuration (randomized, 150 trials); normal/χ² quantiles; budget respected with positive lower bounds; the headline numbers reproduce exactly from the seeded pipeline; the input-uncertainty interval is wider than the simulation CI and covers the hidden line; plausible twins are centred on the calibrated failure rate (randomized); CSV escaping. CI: `.github/workflows/test.yml`.
 
 ## Limitations (honest)
 
@@ -55,7 +58,7 @@ Deterministic line throughput equals the slowest station's rate; state accountin
 
 ## Prior art and what is new
 
-Throughput bottleneck detection (active period method, turning-point and arrow-based methods from Li & Meerkov's production systems engineering), DES digital twins (Simio, FlexSim, AnyLogic), and ranking & selection (Kim-Nelson, Rinott) are established. Commercial "bottleneck analysis" exists in some MES/analytics products. The contribution here is packaging them into the workflow Onodrim's job posts describe: from a raw MES log to a costed, statistically ranked improvement plan that a Forward Deployed Operator can take to a plant director, inside the Foundry Workshop environment they already deploy. I found no public Onodrim product (the company has not announced an acquisition yet), so this is new for them by construction.
+Throughput bottleneck detection (active period method, turning-point and arrow-based methods from Li & Meerkov's production systems engineering), DES digital twins (Simio, FlexSim, AnyLogic), and ranking & selection (Kim-Nelson, Rinott) are established. Commercial "bottleneck analysis" exists in some MES/analytics products. Input-uncertainty quantification for simulation decisions is studied (Barton, Nelson and others) but rarely surfaces in plant tools. The contribution here is packaging them into the workflow Onodrim's job posts describe: from a raw MES log to a costed, statistically ranked improvement plan that a Forward Deployed Operator can take to a plant director, inside the Foundry Workshop environment they already deploy. I found no public Onodrim product (the company has not announced an acquisition yet), so this is new for them by construction.
 
 ## Run locally
 

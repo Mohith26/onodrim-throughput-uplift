@@ -81,6 +81,7 @@ const plan = L.greedyPlan(twin, ACTIONS, 100000, { reps: REPS, seed0: 7000 });
 const trueBase = L.replicate(TRUE_LINE, REPS, { seed0: 30000 });
 const truePlan = L.replicate(L.applyActions(TRUE_LINE, ACTIONS.filter((a) => plan.plan.includes(a.id))), REPS, { seed0: 30000 });
 const truth = L.upliftCI(trueBase, truePlan);
+const rob = L.robustness(twin, stations, ACTIONS, plan.plan, { B: 60, reps: 8, seed: 99 });
 const worstOEE = mes.oee.reduce((b, o) => (o.oee < b.oee ? o : b));
 const results = {
   generated: 'node scripts/generate.mjs (seeded; deterministic)', reps: REPS,
@@ -92,8 +93,9 @@ const results = {
   kn: { best: ACTIONS[kn.best].id, alive: kn.alive.map((i) => ACTIONS[i].id), elimAt: Object.fromEntries(ACTIONS.map((a, i) => [a.id, kn.elimAt[i]])), totalReps: kn.totalReps, alpha: 0.05, delta: 8 },
   plan: { budget: 100000, ids: plan.plan, steps: plan.steps.map((s) => ({ ...s, uplift: +s.uplift.toFixed(2), lo: +s.lo.toFixed(2), hi: +s.hi.toFixed(2) })), spent: plan.spent, uplift: +plan.total.mean.toFixed(2), lo: +plan.total.lo.toFixed(2), hi: +plan.total.hi.toFixed(2), baseMean: +plan.baseMean.toFixed(2), pct: +(plan.total.mean / plan.baseMean).toFixed(4) },
   truthCheck: { uplift: +truth.mean.toFixed(2), lo: +truth.lo.toFixed(2), hi: +truth.hi.toFixed(2), base: +mean(trueBase).toFixed(2), pct: +(truth.mean / mean(trueBase)).toFixed(4) },
+  robust: { B: rob.B, reps: rob.reps, mean: +rob.uplift.mean.toFixed(2), p05: +rob.uplift.p05.toFixed(2), p95: +rob.uplift.p95.toFixed(2), bestShare: Object.fromEntries(Object.entries(rob.bestShare).map(([k, v]) => [k, +v.toFixed(4)])) },
   worstOEE: { id: worstOEE.id, oee: worstOEE.oee },
   constraint: { id: TRUE_LINE.stations[all.sole.indexOf(Math.max(...all.sole))].id, sole: Math.max(...all.sole) },
 };
 writeFileSync(new URL('../data/results.json', import.meta.url), JSON.stringify(results, null, 1));
-console.log(JSON.stringify({ observed: weekly, twin: results.twinWeeklyMean, kn: results.kn, plan: results.plan, truth: results.truthCheck, worst: results.worstOEE, constraint: results.constraint, actions: results.actions }, null, 1));
+console.log(JSON.stringify({ observed: weekly, twin: results.twinWeeklyMean, kn: results.kn, plan: results.plan, truth: results.truthCheck, robust: results.robust, worst: results.worstOEE, constraint: results.constraint, actions: results.actions }, null, 1));
