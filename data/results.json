@@ -1,0 +1,223 @@
+{
+ "generated": "node scripts/generate.mjs (seeded; deterministic)",
+ "reps": 40,
+ "observedWeekly": [
+  594,
+  636,
+  597,
+  588
+ ],
+ "observedWeeklyMean": 603.75,
+ "twinWeeklyMean": 613.02,
+ "twinWeeklySd": 34.94,
+ "calibrated": [
+  {
+   "id": "OP10",
+   "name": "Saw & prep",
+   "ideal": 2.6,
+   "cycle": 3.005,
+   "cv": 0.1003,
+   "mtbf": 1922.42,
+   "mttr": 28.775
+  },
+  {
+   "id": "OP20",
+   "name": "5-axis rough",
+   "ideal": 5.8,
+   "cycle": 6.1892,
+   "cv": 0.0781,
+   "mtbf": 527.94,
+   "mttr": 40.427
+  },
+  {
+   "id": "OP30",
+   "name": "5-axis finish",
+   "ideal": 6.2,
+   "cycle": 6.5866,
+   "cv": 0.0793,
+   "mtbf": 443.56,
+   "mttr": 57.887
+  },
+  {
+   "id": "OP40",
+   "name": "Deburr & wash",
+   "ideal": 4,
+   "cycle": 5.3953,
+   "cv": 0.2996,
+   "mtbf": 1150.54,
+   "mttr": 14.583
+  },
+  {
+   "id": "OP50",
+   "name": "CMM inspect",
+   "ideal": 4.6,
+   "cycle": 4.996,
+   "cv": 0.1186,
+   "mtbf": 1420.51,
+   "mttr": 33.4
+  },
+  {
+   "id": "OP60",
+   "name": "Mark & pack",
+   "ideal": 2.8,
+   "cycle": 3.1903,
+   "cv": 0.1489,
+   "mtbf": 2040.97,
+   "mttr": 7.925
+  }
+ ],
+ "actions": [
+  {
+   "id": "A1",
+   "mean": 26.18,
+   "lo": 22.34,
+   "hi": 30.01,
+   "pct": 0.0427
+  },
+  {
+   "id": "A2",
+   "mean": 22.63,
+   "lo": 16.27,
+   "hi": 28.98,
+   "pct": 0.0369
+  },
+  {
+   "id": "A3",
+   "mean": 0.7,
+   "lo": 0.16,
+   "hi": 1.24,
+   "pct": 0.0011
+  },
+  {
+   "id": "A4",
+   "mean": 6.3,
+   "lo": 4.64,
+   "hi": 7.96,
+   "pct": 0.0103
+  },
+  {
+   "id": "A5",
+   "mean": -0.3,
+   "lo": -0.7,
+   "hi": 0.1,
+   "pct": -0.0005
+  },
+  {
+   "id": "A6",
+   "mean": 10.47,
+   "lo": 7.2,
+   "hi": 13.75,
+   "pct": 0.0171
+  },
+  {
+   "id": "A7",
+   "mean": 34.92,
+   "lo": 31.08,
+   "hi": 38.77,
+   "pct": 0.0569
+  },
+  {
+   "id": "A8",
+   "mean": 7.65,
+   "lo": 6.68,
+   "hi": 8.62,
+   "pct": 0.0125
+  },
+  {
+   "id": "A9",
+   "mean": -0.07,
+   "lo": -0.22,
+   "hi": 0.07,
+   "pct": -0.0001
+  }
+ ],
+ "baseMean": 613.6,
+ "kn": {
+  "best": "A7",
+  "alive": [
+   "A7"
+  ],
+  "elimAt": {
+   "A1": 10,
+   "A2": 10,
+   "A3": 10,
+   "A4": 10,
+   "A5": 10,
+   "A6": 10,
+   "A7": null,
+   "A8": 10,
+   "A9": 10
+  },
+  "totalReps": 90,
+  "alpha": 0.05,
+  "delta": 8
+ },
+ "plan": {
+  "budget": 100000,
+  "ids": [
+   "A7",
+   "A4",
+   "A1",
+   "A6",
+   "A3"
+  ],
+  "steps": [
+   {
+    "action": "A7",
+    "uplift": 35.45,
+    "lo": 32.54,
+    "hi": 38.36,
+    "spent": 15000
+   },
+   {
+    "action": "A4",
+    "uplift": 7.65,
+    "lo": 6.04,
+    "hi": 9.26,
+    "spent": 23000
+   },
+   {
+    "action": "A1",
+    "uplift": 24.32,
+    "lo": 19.48,
+    "hi": 29.17,
+    "spent": 61000
+   },
+   {
+    "action": "A6",
+    "uplift": 17.25,
+    "lo": 14.46,
+    "hi": 20.04,
+    "spent": 91000
+   },
+   {
+    "action": "A3",
+    "uplift": 1.3,
+    "lo": 0.54,
+    "hi": 2.06,
+    "spent": 100000
+   }
+  ],
+  "spent": 100000,
+  "uplift": 85.67,
+  "lo": 79.78,
+  "hi": 91.57,
+  "baseMean": 613.48,
+  "pct": 0.1397
+ },
+ "truthCheck": {
+  "uplift": 98.45,
+  "lo": 92.93,
+  "hi": 103.97,
+  "base": 583.33,
+  "pct": 0.1688
+ },
+ "worstOEE": {
+  "id": "OP10",
+  "oee": 0.3371
+ },
+ "constraint": {
+  "id": "OP30",
+  "sole": 0.8630208333333333
+ }
+}
