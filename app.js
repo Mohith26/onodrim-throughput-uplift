@@ -152,15 +152,15 @@ function plan(r) {
   const worst = m.oee.reduce((b, o) => (o.oee < b.oee ? o : b));
   const rows = acts.map(({ a, e }) => {
     const inPlan = P.ids.includes(a.id);
-    const status = kn.best === a.id ? '<span class="tag green">best (KN)</span>' : kn.elimAt[a.id] != null ? `<span class="tag gray">out at rep ${kn.elimAt[a.id]}</span>` : '<span class="tag blue">in contention</span>';
-    return `<tr class="${inPlan ? 'sel' : ''}" data-href="${href({ station: a.station || (a.kind === 'buffer' ? m.oee[a.buffer + 1].id : r.station) })}"><td><div>${esc(a.title)}${a.station === worst.id ? ' <span class="tag orange">lowest OEE</span>' : ''}</div><div style="font-size:12px;color:var(--gray1)">${esc(a.detail)}</div></td><td class="num">${eur(a.cost)}</td><td class="num">${e.mean >= 0 ? '+' : ''}${e.mean.toFixed(1)}</td><td>${ciBar(e, lo, hi)}</td><td class="num">${e.mean > 0 ? (e.mean / (a.cost / 10000)).toFixed(1) : '—'}</td><td>${status}</td><td>${inPlan ? `<span class="tag green">step ${P.ids.indexOf(a.id) + 1}</span>` : ''}</td></tr>`;
+    const status = kn.best === a.id ? '<span class="tag green">selected</span>' : kn.elimAt[a.id] != null ? `<span class="tag gray">out at rep ${kn.elimAt[a.id]}</span>` : '<span class="tag blue">in contention</span>';
+    return `<tr class="${inPlan ? 'sel' : ''}" data-href="${href({ station: a.station || (a.kind === 'buffer' ? m.oee[a.buffer + 1].id : r.station) })}"><td><div>${inPlan ? `<span class="tag green" style="margin-right:6px">step ${P.ids.indexOf(a.id) + 1}</span>` : ''}${esc(a.title)}${a.station === worst.id ? ' <span class="tag orange">lowest OEE</span>' : ''}</div><div style="font-size:12px;color:var(--gray1)">${esc(a.detail)}</div></td><td class="num">${eur(a.cost)}</td><td class="num">${e.mean >= 0 ? '+' : ''}${e.mean.toFixed(1)}</td><td>${ciBar(e, lo, hi)}</td><td class="num">${e.mean > 0 ? (e.mean / (a.cost / 10000)).toFixed(1) : '—'}</td><td>${status}</td></tr>`;
   }).join('');
   const approved = st.approved;
   const steps = P.steps.map((s, i) => { const a = m.actions.find((x) => x.id === s.action); return `<tr><td>${i + 1}</td><td>${esc(a.title)}</td><td class="num">${eur(a.cost)}</td><td class="num">+${s.uplift.toFixed(1)} <span style="color:var(--gray1)">(${s.lo.toFixed(1)} to ${s.hi.toFixed(1)})</span></td><td class="num">${eur(s.spent)}</td></tr>`; }).join('');
   return `
   <div class="callout ${approved ? 'success' : ''}">${ic(approved ? 'tick-circle' : 'predictive-analysis')}${approved ? `<b>Plan approved</b> (${approved.ids.join(', ')}, ${eur(approved.spent)}). ${st.workorders.length} work orders created for the plant team.` : `<b>Each action is simulated on a twin calibrated from your MES log</b>, with common random numbers so differences are measured on identical weeks. Ranking uses the Kim–Nelson procedure: P(pick the best) ≥ ${pct(1 - st.alpha, 0)} if it is at least ${st.delta} parts/week better than the rest.`}</div>
   <div class="sec"><div class="h">${ic('properties')}<span class="grow">Candidate actions</span><small>uplift in good parts / week vs current line, 95% CI, ${R.reps} paired weeks</small></div>
-  <div style="overflow:auto"><table class="ot sortable" aria-label="Candidate actions"><thead><tr>${['Action', 'Cost', 'Uplift', '95% CI', 'Per €10k', 'Selection', 'Plan'].map((h, k) => `<th data-s tabindex="0" class="${[1, 2, 4].includes(k) ? 'num' : ''}">${h}${ic('double-caret-vertical')}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>
+  <div style="overflow:auto"><table class="ot sortable" aria-label="Candidate actions"><thead><tr>${['Action', 'Cost', 'Uplift', '95% CI', 'Per €10k', 'Selection (KN)'].map((h, k) => `<th data-s tabindex="0" class="${[1, 2, 4].includes(k) ? 'num' : ''}">${h}${ic('double-caret-vertical')}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>
   <div class="sec"><div class="h">${ic('build')}<span class="grow">Budgeted plan</span>
     <div class="controls"><label for="budget">Budget</label><div class="bp5-html-select"><select id="budget">${[30000, 60000, 100000, 150000, 250000].map((b) => `<option value="${b}" ${b === (P.budget || st.budget) ? 'selected' : ''}>${eur(b)}</option>`).join('')}</select><span class="bp5-icon bp5-icon-double-caret-vertical"></span></div>
     <button class="bp5-button" data-act="replan">${ic('refresh')}<span class="bp5-button-text">Re-plan</span></button>
@@ -259,7 +259,7 @@ function sortTable(th) {
 // available in the browser, so other days show the stored daily shares only.
 function render() {
   const r = route();
-  $('#tabs').innerHTML = [['overview', 'Overview'], ['bottleneck', 'Bottleneck'], ['plan', 'Uplift plan'], ['twin', 'Twin check']].map(([t, l]) => `<a role="tab" href="${href({ tab: t })}" aria-selected="${r.tab === t}">${l}</a>`).join('');
+  $('#tabs').innerHTML = `<span class="ttl">${ic('layout-auto')}Line 2</span>` + [['overview', 'Overview'], ['bottleneck', 'Bottleneck'], ['plan', 'Uplift plan'], ['twin', 'Twin check']].map(([t, l]) => `<a role="tab" href="${href({ tab: t })}" aria-selected="${r.tab === t}">${l}</a>`).join('');
   left(r);
   let body;
   try {

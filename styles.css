@@ -21,7 +21,7 @@ body{font-family:var(--font);font-size:14px;line-height:1.35;color:var(--dark);b
 .ph .bp5-icon-standard{color:var(--gray1)}
 .ph .grow{flex:1}
 .pb{overflow:auto;flex:1;min-height:0}
-.center{background:var(--lg5)}
+.center{background:var(--white)}
 /* filter list (Workshop filter list widget) */
 .fsec{padding:14px 16px;border-bottom:1px solid var(--lg3)}
 .fsec h5{margin:0 0 8px;font-size:12px;font-weight:600;color:var(--gray1);letter-spacing:.4px;text-transform:uppercase;display:flex;justify-content:space-between}
@@ -37,8 +37,10 @@ body{font-family:var(--font);font-size:14px;line-height:1.35;color:var(--dark);b
 .navitem.on{background:var(--sel);color:var(--bp-blue-dark)}
 .navitem .bp5-icon-standard{margin-right:8px;color:inherit;opacity:.8}
 /* tabs bar */
-.tabs{display:flex;gap:22px;padding:0 20px;background:var(--white);border-bottom:1px solid var(--lg1);height:40px;align-items:flex-end}
-.tabs a{padding:0 0 9px;color:var(--dark);text-decoration:none;font-size:14px;border-bottom:3px solid transparent}
+.tabs{display:flex;gap:22px;padding:0 20px;background:var(--white);border-bottom:1px solid var(--lg1);height:48px;align-items:flex-end;flex:none}
+.tabs .ttl{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;align-self:center;margin-right:10px}.tabs .ttl .bp5-icon-standard{color:var(--gray1)}
+.sec svg{max-width:980px;display:block}
+.tabs a{padding:0 0 12px;color:var(--dark);text-decoration:none;font-size:14px;border-bottom:3px solid transparent}
 .tabs a[aria-selected=true]{color:var(--bp-blue);border-color:var(--bp-blue)}
 .tabs a:hover{color:var(--bp-blue)}
 .body{padding:16px 20px 30px}
